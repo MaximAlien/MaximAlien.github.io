@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    
+<head>
+    <title>Polyline</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="polyline.js"></script>
+
+</head>
+
+<body>
+<div id="map" style="width: 1200px; height: 800px;"></div>
+
+Encoded polyline:
+</br> 
+<textarea id="encoded_polyline" style="width: 1200px;" rows="10"></textarea>
+</br>
+
+Decoded polyline:
+</br> 
+<textarea id="decoded_polyline" style="width: 1200px;" rows="10"></textarea>
+</br>
+
+<script>
+	const map = L.map('map')
+        .setView([37.773972, -122.431297], 13);
+
+	const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
+
+    const polyline_on_map = L.polyline(
+        [],
+        {
+            color: "Black",
+            weight: 1.5,
+            opacity: 1.0,
+            lineJoin: 'round'
+        }
+    ).addTo(map);
+
+    document.querySelector("#encoded_polyline").addEventListener('input', () => {
+        try {
+            const decoded_coordinates = polyline.decode(document.querySelector("#encoded_polyline").value.replace(/\\\\/g, '\\'));
+            document.querySelector("#decoded_polyline").value = JSON.stringify(decoded_coordinates);
+
+            polyline_on_map.setLatLngs(decoded_coordinates);
+            map.fitBounds(decoded_coordinates);
+        } catch (e) {
+            document.querySelector("#decoded_polyline").value = "";
+        }
+    })
+
+    document.querySelector("#decoded_polyline").addEventListener('input', () => {
+        try {
+            const decoded_coordinates = JSON.parse(document.querySelector("#decoded_polyline").value);
+            const encoded_coordinates = polyline.encode(decoded_coordinates);
+            document.querySelector("#encoded_polyline").value = encoded_coordinates;
+
+            polyline_on_map.setLatLngs(decoded_coordinates);
+            map.fitBounds(decoded_coordinates);
+        } catch (e) {
+            document.querySelector("#encoded_polyline").value = "";
+        }
+    })
+
+</script>
+</body>
+
+</html>
